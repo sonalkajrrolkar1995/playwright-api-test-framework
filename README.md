@@ -1,49 +1,44 @@
 # Playwright API Test Framework
 
-API test framework built with Playwright (Node.js). Covers CRUD, negative, and data-driven tests for two public REST APIs — [ReqRes](https://reqres.in) and [Restful Booker](https://restful-booker.herokuapp.com).
+I built this framework to test two public REST APIs - [ReqRes](https://reqres.in) and [Restful Booker](https://restful-booker.herokuapp.com) - using Playwright's built-in API testing capabilities in Node.js.
+
+It handles the full test lifecycle: CRUD flows, negative cases, data-driven tests, schema validation, and CI via GitHub Actions.
 
 ---
 
-## What it covers
+## What is tested
 
-- Full CRUD flows with shared state (create → read → update → delete)
-- Negative tests: unauthorized access, missing fields, invalid payloads, non-existent resources
-- Data-driven tests using [@faker-js/faker](https://github.com/faker-js/faker)
-- JSON Schema validation using [AJV](https://ajv.js.org/)
-- Custom assertions and a retry helper
-- Structured console logging (timestamped, per request/response)
-- Parallel execution, HTML report, GitHub Actions CI
+**Restful Booker**
+- Full booking lifecycle: create, read, update (PUT + PATCH), delete
+- Auth token handling - cached per session
+- Negative cases: no token, wrong credentials, missing fields, non-existent IDs
 
----
-
-## Tech stack
-
-| Tool | Purpose |
-|---|---|
-| [@playwright/test](https://playwright.dev/docs/api-testing) | Test runner + API request context |
-| [AJV v8](https://ajv.js.org/) + [ajv-formats](https://github.com/ajv-validator/ajv-formats) | Schema validation |
-| [@faker-js/faker](https://github.com/faker-js/faker) | Dynamic test data |
-| [dotenv](https://github.com/motdotla/dotenv) | Environment variable management |
+**ReqRes**
+- User CRUD: list (paginated), single, create, update, delete
+- Negative cases: invalid IDs, empty payloads
+- Data-driven: multiple user IDs and create payloads in one loop
 
 ---
 
-## Project structure
+## Tools used
+
+- **@playwright/test** - test runner and API request client
+- **AJV v8 + ajv-formats** - JSON Schema validation on responses
+- **@faker-js/faker** - generates realistic test data per run
+- **dotenv** - loads API keys from `.env` without hardcoding them
+
+---
+
+## Folder structure
 
 ```
-├── api/                    # API client wrappers (per service)
-│   └── booker/
-├── auth/                   # Auth token management
-├── config/                 # Base URLs and env-level headers
-├── data/                   # Test data generators and fixtures
-├── schemas/                # AJV JSON schemas
-├── tests/
-│   └── api/
-│       ├── booker/         # Booker CRUD, negative tests
-│       └── reqres/         # ReqRes CRUD, negative, data-driven
-├── utils/                  # Shared: client, assertions, logger, retry, schema validator
-├── .env.example
-├── playwright.config.js
-└── package.json
+api/          API client classes per service
+auth/         Booker token management
+config/       Base URLs and headers per environment
+data/         Test data generators (Faker) and static fixtures
+schemas/      JSON schemas for AJV validation
+tests/api/    Spec files - booker/ and reqres/
+utils/        Shared helpers: client, assertions, logger, retry, schema validator
 ```
 
 ---
@@ -54,50 +49,41 @@ API test framework built with Playwright (Node.js). Covers CRUD, negative, and d
 npm install
 ```
 
-### ReqRes API key
-
-ReqRes requires a free API key. Register at [app.reqres.in](https://app.reqres.in), then:
+**ReqRes needs an API key.** It became a required header in late 2024. Get a free key at [app.reqres.in](https://app.reqres.in), then:
 
 ```bash
 cp .env.example .env
-# Edit .env and set REQRES_API_KEY=your_key
+# open .env and set REQRES_API_KEY=your_key_here
 ```
 
-Without the key, all ReqRes tests skip cleanly with a descriptive message.
+If the key is missing, ReqRes tests skip automatically - they do not fail.
 
 ---
 
-## Running tests
+## Running
 
 ```bash
-# All tests
-npm test
-
-# Booker only
-npm run test:booker
-
-# ReqRes only (requires REQRES_API_KEY in .env)
-npm run test:reqres
-
-# Open HTML report
-npm run report
+npm test                  # all tests
+npm run test:booker       # Booker only
+npm run test:reqres       # ReqRes only - needs REQRES_API_KEY in .env
+npm run report            # open HTML report in browser
 ```
 
 ---
 
-## CI/CD
+## CI
 
-GitHub Actions workflow at `.github/workflows/api-tests.yml`. Runs ReqRes and Booker suites as parallel jobs. HTML report is uploaded as an artifact on every run.
+Two parallel jobs in `.github/workflows/api-tests.yml` - one for each API. The HTML report is uploaded as an artifact on every run.
 
-Set `REQRES_API_KEY` as a repository secret to enable ReqRes tests in CI.
+To run ReqRes tests in CI, add `REQRES_API_KEY` as a repository secret.
 
 ---
 
-## Known API quirks documented in tests
+## API behaviour worth noting
 
-| API | Behaviour |
-|---|---|
-| Restful Booker | `DELETE /booking/:id` returns `201` (not `204`) |
-| Restful Booker | Auth failure returns `{ "reason": "Bad credentials" }` — not a token field |
-| Restful Booker | Non-numeric `totalprice` is coerced to `null`, request returns `200` |
-| ReqRes | Requires `x-api-key` header since late 2024 |
+A few things these APIs do that are not obvious from their docs:
+
+- Restful Booker returns `201` on DELETE - not `204`. Tests account for this.
+- Booker auth failure response is `{ "reason": "Bad credentials" }` - there is no `token` field in that case.
+- Booker accepts a non-numeric `totalprice`, coerces it to `null`, and returns `200`. I validated the null value instead of expecting a 400.
+- ReqRes now requires `x-api-key` on every request. Without it you get a `401`.
