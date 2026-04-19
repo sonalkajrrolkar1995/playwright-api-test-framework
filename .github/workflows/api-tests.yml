@@ -1,0 +1,100 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch:         # allow manual trigger
+
+jobs:
+  test-reqres:
+    name: ReqRes API Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright (no browser needed for API tests)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run ReqRes tests
+        run: npx playwright test tests/api/reqres --reporter=html,list,json
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reqres-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload JSON results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reqres-results-json
+          path: test-results/
+          retention-days: 7
+
+  test-booker:
+    name: Restful Booker API Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Booker tests
+        run: npx playwright test tests/api/booker --reporter=html,list,json
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booker-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload JSON results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booker-results-json
+          path: test-results/
+          retention-days: 7
+
+  test-all:
+    name: Full Suite (Parallel)
+    runs-on: ubuntu-latest
+    needs: [test-reqres, test-booker]
+    if: always()
+    steps:
+      - name: Report status
+        run: |
+          echo "ReqRes: ${{ needs.test-reqres.result }}"
+          echo "Booker: ${{ needs.test-booker.result }}"
+          if [ "${{ needs.test-reqres.result }}" != "success" ] || [ "${{ needs.test-booker.result }}" != "success" ]; then
+            echo "One or more suites failed"
+            exit 1
+          fi
