@@ -17,7 +17,7 @@ const getToken = async () => {
   });
 
   if (!res.ok()) {
-    throw new Error(`Booker auth failed — status ${res.status()}`);
+    throw new Error(`Booker auth failed - status ${res.status()}`);
   }
 
   const body = await res.json();

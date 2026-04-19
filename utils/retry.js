@@ -9,7 +9,7 @@ const withRetry = async (fn, { retries = 3, delay = 1000, label = 'operation' } 
         logger.error(`${label} failed after ${retries} attempts`, { error: err.message });
         throw err;
       }
-      logger.warn(`${label} attempt ${attempt} failed — retrying in ${delay}ms`, { error: err.message });
+      logger.warn(`${label} attempt ${attempt} failed - retrying in ${delay}ms`, { error: err.message });
       await new Promise(r => setTimeout(r, delay));
     }
   }

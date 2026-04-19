@@ -6,8 +6,8 @@ const { assertStatus, assertBodyContains } = require('../../../utils/assertions'
 const { singleUserSchema } = require('../../../schemas/reqresSchemas');
 const { validateSchema } = require('../../../utils/schemaValidator');
 
-test.describe('ReqRes — Data-Driven Tests', () => {
-  test.skip(!process.env.REQRES_API_KEY, 'Set REQRES_API_KEY env var — get a free key at https://app.reqres.in');
+test.describe('ReqRes - Data-Driven Tests', () => {
+  test.skip(!process.env.REQRES_API_KEY, 'Set REQRES_API_KEY env var - get a free key at https://app.reqres.in');
 
   let client;
 
@@ -20,9 +20,8 @@ test.describe('ReqRes — Data-Driven Tests', () => {
     await client.dispose();
   });
 
-  // ─── Valid user IDs ────────────────────────────────────────────────────────────
   for (const id of userIds.valid) {
-    test(`GET /users/${id} — valid user returns 200 with correct schema`, async () => {
+    test(`GET /users/${id} - valid user returns 200 with correct schema`, async () => {
       const res  = await client.getUser(id);
       const body = await res.json();
 
@@ -32,15 +31,13 @@ test.describe('ReqRes — Data-Driven Tests', () => {
     });
   }
 
-  // ─── Invalid user IDs ─────────────────────────────────────────────────────────
   for (const id of userIds.nonExistent) {
-    test(`GET /users/${id} — non-existent ID returns 404`, async () => {
+    test(`GET /users/${id} - non-existent ID returns 404`, async () => {
       const res = await client.getUser(id);
       assertStatus(res, 404);
     });
   }
 
-  // ─── POST with varied payloads ─────────────────────────────────────────────────
   const createCases = [
     { label: 'job title "Engineer"',  payload: { name: 'Alice',  job: 'Engineer'  } },
     { label: 'job title "Designer"',  payload: { name: 'Bob',    job: 'Designer'  } },
@@ -50,7 +47,7 @@ test.describe('ReqRes — Data-Driven Tests', () => {
   ];
 
   for (const { label, payload } of createCases) {
-    test(`POST /users — ${label}`, async () => {
+    test(`POST /users - ${label}`, async () => {
       const res  = await client.createUser(payload);
       const body = await res.json();
 
@@ -60,11 +57,10 @@ test.describe('ReqRes — Data-Driven Tests', () => {
     });
   }
 
-  // ─── Page-level pagination ─────────────────────────────────────────────────────
   const pages = [1, 2];
 
   for (const page of pages) {
-    test(`GET /users?page=${page} — returns correct page number`, async () => {
+    test(`GET /users?page=${page} - returns correct page number`, async () => {
       const res  = await client.getUsers(page);
       const body = await res.json();
 

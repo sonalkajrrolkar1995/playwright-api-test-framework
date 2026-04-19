@@ -10,8 +10,8 @@ const {
   updateUserSchema,
 } = require('../../../schemas/reqresSchemas');
 
-test.describe('ReqRes — Users CRUD', () => {
-  test.skip(!process.env.REQRES_API_KEY, 'Set REQRES_API_KEY env var — get a free key at https://app.reqres.in');
+test.describe('ReqRes - Users CRUD', () => {
+  test.skip(!process.env.REQRES_API_KEY, 'Set REQRES_API_KEY env var - get a free key at https://app.reqres.in');
 
   let client;
 
@@ -24,7 +24,6 @@ test.describe('ReqRes — Users CRUD', () => {
     await client.dispose();
   });
 
-  // ─── GET /users ───────────────────────────────────────────────────────────────
   test.describe('GET /users', () => {
     test('returns paginated user list with correct structure', async () => {
       const res  = await client.getUsers(1);
@@ -70,7 +69,6 @@ test.describe('ReqRes — Users CRUD', () => {
     });
   });
 
-  // ─── GET /users/:id ───────────────────────────────────────────────────────────
   test.describe('GET /users/:id', () => {
     test('returns correct user for ID 2', async () => {
       const res  = await client.getUser(2);
@@ -88,7 +86,6 @@ test.describe('ReqRes — Users CRUD', () => {
     });
   });
 
-  // ─── POST /users ──────────────────────────────────────────────────────────────
   test.describe('POST /users', () => {
     test('creates a user and returns correct response body', async () => {
       const payload = generateUser();
@@ -119,7 +116,6 @@ test.describe('ReqRes — Users CRUD', () => {
     });
   });
 
-  // ─── PUT /users/:id ───────────────────────────────────────────────────────────
   test.describe('PUT /users/:id', () => {
     test('fully updates a user and returns updatedAt', async () => {
       const payload = generateUser();
@@ -140,9 +136,8 @@ test.describe('ReqRes — Users CRUD', () => {
     });
   });
 
-  // ─── PATCH /users/:id ─────────────────────────────────────────────────────────
   test.describe('PATCH /users/:id', () => {
-    test('partially updates a user — name only', async () => {
+    test('partially updates a user - name only', async () => {
       const res  = await client.patchUser(2, { name: 'Patch Name' });
       const body = await res.json();
 
@@ -151,7 +146,7 @@ test.describe('ReqRes — Users CRUD', () => {
       assertFieldsExist(body, ['updatedAt']);
     });
 
-    test('partially updates a user — job only', async () => {
+    test('partially updates a user - job only', async () => {
       const res  = await client.patchUser(2, { job: 'Patch Job' });
       const body = await res.json();
 
@@ -160,7 +155,6 @@ test.describe('ReqRes — Users CRUD', () => {
     });
   });
 
-  // ─── DELETE /users/:id ────────────────────────────────────────────────────────
   test.describe('DELETE /users/:id', () => {
     test('deletes a user and returns 204 No Content', async () => {
       const res = await client.deleteUser(2);

@@ -10,7 +10,7 @@ const {
 const { validateSchema } = require('../../../utils/schemaValidator');
 
 // Serial so each test can depend on the bookingId created in the first test.
-test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
+test.describe.serial('Restful Booker - Booking CRUD Flow', () => {
   let client;
   let bookingId;
   let originalBooking;
@@ -25,8 +25,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     await client.dispose();
   });
 
-  // ─── GET /booking ─────────────────────────────────────────────────────────────
-  test('GET /booking — returns non-empty list of booking IDs', async () => {
+  test('GET /booking - returns non-empty list of booking IDs', async () => {
     const res  = await client.getBookings();
     const body = await res.json();
 
@@ -36,7 +35,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     body.slice(0, 5).forEach(item => validateSchema(bookingListItemSchema, item));
   });
 
-  test('GET /booking?firstname=Sally — filters by firstname', async () => {
+  test('GET /booking?firstname=Sally - filters by firstname', async () => {
     const res  = await client.getBookings({ firstname: 'Sally' });
     const body = await res.json();
 
@@ -44,7 +43,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     expect(body).toBeInstanceOf(Array);
   });
 
-  test('GET /booking?checkin=2024-01-01 — filters by checkin date', async () => {
+  test('GET /booking?checkin=2024-01-01 - filters by checkin date', async () => {
     const res  = await client.getBookings({ checkin: '2024-01-01' });
     const body = await res.json();
 
@@ -52,8 +51,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     expect(body).toBeInstanceOf(Array);
   });
 
-  // ─── POST /booking ────────────────────────────────────────────────────────────
-  test('POST /booking — creates booking and returns ID + full details', async () => {
+  test('POST /booking - creates booking and returns ID + full details', async () => {
     originalBooking = generateBooking();
     const res       = await client.createBooking(originalBooking);
     const body      = await res.json();
@@ -72,8 +70,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     bookingId = body.bookingid;
   });
 
-  // ─── GET /booking/:id ─────────────────────────────────────────────────────────
-  test('GET /booking/:id — retrieves the created booking', async () => {
+  test('GET /booking/:id - retrieves the created booking', async () => {
     const res  = await client.getBooking(bookingId);
     const body = await res.json();
 
@@ -89,8 +86,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     assertStatusAndSchema(res, body, bookingDetailsSchema, 200);
   });
 
-  // ─── PUT /booking/:id ─────────────────────────────────────────────────────────
-  test('PUT /booking/:id — fully replaces booking', async () => {
+  test('PUT /booking/:id - fully replaces booking', async () => {
     const updated = generateBooking();
     const res     = await client.updateBooking(bookingId, updated);
     const body    = await res.json();
@@ -107,8 +103,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     originalBooking = updated;
   });
 
-  // ─── PATCH /booking/:id ───────────────────────────────────────────────────────
-  test('PATCH /booking/:id — partially updates firstname and lastname', async () => {
+  test('PATCH /booking/:id - partially updates firstname and lastname', async () => {
     const res  = await client.patchBooking(bookingId, {
       firstname: 'PatchedFirst',
       lastname:  'PatchedLast',
@@ -123,7 +118,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     assertStatusAndSchema(res, body, bookingDetailsSchema, 200);
   });
 
-  test('PATCH /booking/:id — partially updates totalprice only', async () => {
+  test('PATCH /booking/:id - partially updates totalprice only', async () => {
     const res  = await client.patchBooking(bookingId, { totalprice: 1 });
     const body = await res.json();
 
@@ -131,8 +126,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     expect(body.totalprice).toBe(1);
   });
 
-  // ─── DELETE /booking/:id ──────────────────────────────────────────────────────
-  test('DELETE /booking/:id — returns 201 Created (Booker quirk)', async () => {
+  test('DELETE /booking/:id - returns 201 Created (Booker quirk)', async () => {
     const res  = await client.deleteBooking(bookingId);
     const text = await res.text();
 
@@ -140,7 +134,7 @@ test.describe.serial('Restful Booker — Booking CRUD Flow', () => {
     expect(text).toBe('Created');
   });
 
-  test('GET /booking/:id — returns 404 after deletion', async () => {
+  test('GET /booking/:id - returns 404 after deletion', async () => {
     const res = await client.getBooking(bookingId);
     assertStatus(res, 404);
   });
